@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LampTales Payment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            /* Light Theme Colors */
+            --walnut-brown: #554D47;
+            --beaver: #9B8269;
+            --beaver2: #A2866B;
+            --dun: #E5D9C3;
+            --dun2: #F4EDE1;
+            
+            /* Dark Theme Colors */
+            --black: #000000;
+            --rich-black: #111921;
+            --gunmetal: #192633;
+            --prussian-blue: #233547;
+            --paynes-gray: #4F6274;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--dun), var(--dun2));
+            color: var(--walnut-brown);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(229, 217, 195, 0.3), 
+                rgba(244, 237, 225, 0.2));
+            z-index: -1;
+        }
+        
+        h1 {
+            color: var(--beaver);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 32px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        
+        .loader {
+            border: 5px solid rgba(155, 130, 105, 0.1);
+            border-top: 5px solid var(--beaver);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .button {
+            background: rgba(162, 134, 107, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(162, 134, 107, 0.3);
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        .button:hover {
+            background: rgba(162, 134, 107, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status {
+            font-size: 20px;
+            margin: 15px 0;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .success {
+            color: #4CAF50;
+        }
+        
+        .cancel {
+            color: #f44336;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin: 12px 0;
+            color: var(--walnut-brown);
+        }
+        
+        /* Glassmorphic card effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* For dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, var(--gunmetal), var(--rich-black));
+                color: #fff;
+            }
+            
+            .container {
+                background: rgba(25, 38, 51, 0.25);
+                border: 1px solid rgba(79, 98, 116, 0.2);
+            }
+            
+            .container::before {
+                background: linear-gradient(135deg, 
+                    rgba(25, 38, 51, 0.3), 
+                    rgba(35, 53, 71, 0.2));
+            }
+            
+            h1, p {
+                color: #fff;
+            }
+            
+            .button {
+                background: rgba(79, 98, 116, 0.7);
+                border: 1px solid rgba(79, 98, 116, 0.3);
+            }
+            
+            .button:hover {
+                background: rgba(79, 98, 116, 0.9);
+            }
+            
+            .loader {
+                border: 5px solid rgba(79, 98, 116, 0.1);
+                border-top: 5px solid var(--paynes-gray);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LampTales Payment</h1>
+        <div class="glass-card">
+            <div id="status-message" class="status"></div>
+            <p id="redirect-message">Redirecting you back to the app...</p>
+            <div class="loader"></div>
+        </div>
+        <p>If you are not redirected automatically, please click the button below:</p>
+        <a id="redirect-link" class="button">Return to App</a>
+    </div>
+
+    <script>
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Get the session_id and payment_id from URL
+        var sessionId = getUrlParameter('session_id');
+        var paymentId = getUrlParameter('payment_id');
+        var status = getUrlParameter('status');
+
+        // Update status message
+        var statusMessage = document.getElementById('status-message');
+        var redirectMessage = document.getElementById('redirect-message');
+
+        if (status === 'success') {
+            statusMessage.textContent = 'Payment Successful!';
+            statusMessage.className = 'status success';
+            redirectMessage.textContent = 'Redirecting you back to the app...';
+        } else if (status === 'cancel') {
+            statusMessage.textContent = 'Payment Cancelled';
+            statusMessage.className = 'status cancel';
+            redirectMessage.textContent = 'Returning you to the app...';
+        } else {
+            statusMessage.textContent = 'Processing Payment';
+            redirectMessage.textContent = 'Redirecting you back to the app...';
+        }
+
+        // Construct the deep link URL
+        var deepLink = 'lamptales://payment/' + (status === 'cancel' ? 'cancel' : 'success');
+
+        // Add parameters if they exist
+        if (sessionId) {
+            deepLink += '?session_id=' + sessionId;
+            if (paymentId) {
+                deepLink += '&payment_id=' + paymentId;
+            }
+        } else if (paymentId) {
+            deepLink += '?payment_id=' + paymentId;
+        }
+
+        // Set the redirect link href
+        document.getElementById('redirect-link').href = deepLink;
+
+        // Automatically redirect after a short delay
+        setTimeout(function() {
+            window.location.href = deepLink;
+        }, 1500);
+    </script>
+</body>
+</html>
